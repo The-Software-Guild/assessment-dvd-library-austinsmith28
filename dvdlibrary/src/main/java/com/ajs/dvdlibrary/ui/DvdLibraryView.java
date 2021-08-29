@@ -3,16 +3,21 @@ package com.ajs.dvdlibrary.ui;
 import java.util.List;
 
 import com.ajs.dvdlibrary.dto.Dvd;
+import com.ajs.dvdlibrary.dao.DvdLibraryDao;
+import com.ajs.dvdlibrary.dao.DvdLibraryDaoException;
+import com.ajs.dvdlibrary.dao.DvdLibraryDaoImpl;
 
 
 
 public class DvdLibraryView {
 
     private UserIO io;
+    private DvdLibraryDao dao;
 
     
-    public DvdLibraryView(UserIO io) {
+    public DvdLibraryView(UserIO io, DvdLibraryDao dao) {
         this.io = io;
+        this.dao = dao;
     }
     
     
@@ -29,14 +34,15 @@ public class DvdLibraryView {
     }
     
     
-    public Dvd getNewDvdInfo() {
+    public Dvd getNewDvdInfo() throws DvdLibraryDaoException {
         String title = io.readString("Please enter Dvd Title");
         String releaseDate = io.readString("Please enter Release Date");
         String mpaaRating = io.readString("Please enter MPAA Rating");
         String directorName = io.readString("Please enter Director Name");
         String studio = io.readString("Please enter Studio");
         String userNote = io.readString("Please enter User Note / Rating");
-        Dvd currentDvd = new Dvd(title);
+        Dvd currentDvd = new Dvd(dao.generateId());
+        currentDvd.setTitle(title);
         currentDvd.setReleaseDate(releaseDate);
         currentDvd.setMpaaRating(mpaaRating);
         currentDvd.setDirectorName(directorName);
@@ -56,7 +62,7 @@ public class DvdLibraryView {
     
     public void displayDvdList(List<Dvd> DvdList) {
         for (Dvd currentDvd : DvdList) {
-            String dvdInfo = String.format("#%s : %s %s",
+            String dvdInfo = String.format("DVD : %s : %s %s",
                   currentDvd.getTitle(),
                   currentDvd.getReleaseDate(),
                   currentDvd.getMpaaRating(),
@@ -96,6 +102,9 @@ public class DvdLibraryView {
         io.print("=== Remove DVD ===");
     }
     
+    public String displayPickDvdBanner() {
+    	return io.readString("Enter the key of the dvd you would like to remove.");
+    }
 
     public void displayRemoveResult(Dvd dvd) {
         if(dvd != null){

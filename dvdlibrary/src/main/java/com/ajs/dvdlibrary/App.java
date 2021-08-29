@@ -16,9 +16,9 @@ import com.ajs.dvdlibrary.ui.UserIOConsoleImpl;
 public class App 
 {
 	public static void main(String[] args) {
-	    UserIO myIo = new UserIOConsoleImpl();
-	    DvdLibraryView myView = new DvdLibraryView(myIo);
+	    UserIO myIo = new UserIOConsoleImpl();  
 	    DvdLibraryDao myDao = new DvdLibraryDaoImpl();
+	    DvdLibraryView myView = new DvdLibraryView(myIo, myDao);
 	    DvdLibraryController controller =
 	            new DvdLibraryController(myDao, myView);
 	    controller.run();

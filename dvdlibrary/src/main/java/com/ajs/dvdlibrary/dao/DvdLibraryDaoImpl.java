@@ -3,6 +3,7 @@ package com.ajs.dvdlibrary.dao;
 
 
 import java.io.BufferedReader;
+import java.util.Random;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -13,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-
+import java.util.Iterator;
 import com.ajs.dvdlibrary.dto.Dvd;
 
 
@@ -24,13 +25,23 @@ public class DvdLibraryDaoImpl implements DvdLibraryDao {
 	public static final String LIBRARY_FILE = "library.txt";
 	public static final String DELIMITER = "::";
 	
+	Random rand = new Random();
 	
 	@Override
-	public Dvd addDvd(String Title, Dvd dvd) throws DvdLibraryDaoException {
+	public String generateId() {
+		int val = 1;
+		while(dvds.containsKey(String.valueOf(val))) {
+			val = rand.nextInt(dvds.size()*100000000)+1;
+		}
+		return String.valueOf(val);
+	}
+	
+	@Override
+	public Dvd addDvd(String id, Dvd dvd) throws DvdLibraryDaoException {
 	    loadLibrary();
-	    Dvd newStudent = dvds.put(Title, dvd);
+	    Dvd newDvd = dvds.put(id, dvd);
 	    writeLibrary();
-	    return newStudent;
+	    return newDvd;
 	}
 
 	@Override
@@ -42,15 +53,44 @@ public class DvdLibraryDaoImpl implements DvdLibraryDao {
 	@Override
 	public Dvd getDvd(String title) throws DvdLibraryDaoException {
 		loadLibrary();
-	    return dvds.get(title);
+		
+		for(Map.Entry mapElement: dvds.entrySet()) {
+			String key = (String) mapElement.getKey();
+			if(dvds.get(key).getTitle().equals(title)) {
+				return dvds.get(key);
+			}
+		}
+		
+		return null;
 	}
 	
 	@Override
-	public Dvd removeDvd(String title) throws DvdLibraryDaoException {
+	public List<Dvd> removeDvd(String title) throws DvdLibraryDaoException {
+		
 		loadLibrary();
-	    Dvd removedStudent = dvds.remove(title);
-	    writeLibrary();
-	    return removedStudent;
+		
+		List<Dvd> arr = new ArrayList();
+		
+		for(Map.Entry mapElement: dvds.entrySet()) {
+			String key = (String) mapElement.getKey();
+			
+			if(dvds.get(key).getTitle().equals(title)) {
+				//removedDvd = dvds.remove(key);
+				arr.add(dvds.get(key));	
+				
+			}	
+			
+		}
+					
+			return arr;		
+	}
+	
+	public Dvd removeThisDvd(String choice) throws DvdLibraryDaoException{
+		
+		Dvd removedDvd = dvds.remove(choice);
+		writeLibrary();
+		return removedDvd;
+		
 	}
     
     private Dvd unmarshallDvd(String dvdAsText){
@@ -61,38 +101,40 @@ public class DvdLibraryDaoImpl implements DvdLibraryDao {
         // We then split that line on our DELIMITER - which we are using as ::
         // Leaving us with an array of Strings, stored in dvdTokens.
         // Which should look like this:
-        // _________________________________________________________________________________
-        // |      |          |     |             |                        |                 |
-        // |Avatar|12/18/2009|PG-13|James Cameron|Lightstorm Entertainment|good sci-fi movie|
-        // |      |          |     |             |                        |                 | 
-        // ---------------------------------------------------------------------------------
-        //  [0]       [1]      [2]      [3]                 [4]                  [5]
+        // __________________________________________________________________________________________
+        // |       |      |          |     |             |                        |                 |
+        // | DVD ID|Avatar|12/18/2009|PG-13|James Cameron|Lightstorm Entertainment|good sci-fi movie|
+        // |       |      |          |     |             |                        |                 |
+        // ------------------------------------------------------------------------------------------
+        //  [0]       [1]      [2]      [3]       [4]             [5]                    [6]
         String[] dvdTokens = dvdAsText.split(DELIMITER);
 
-        // Given the pattern above, the title is in index 0 of the array.
-        String title = dvdTokens[0];
+       
 
         // Which we can then use to create a new Dvd object to satisfy
         // the requirements of the Dvd constructor.
-        Dvd dvdFromFile = new Dvd(title);
+        Dvd dvdFromFile = new Dvd(dvdTokens[0]);
 
         // However, there are 3 remaining tokens that need to be set into the
         // new dvd object. Do this manually by using the appropriate setters.
-
-        // Index 1 - Release Date
-        dvdFromFile.setReleaseDate(dvdTokens[1]);
-
-        // Index 2 - MPAA Rating
-        dvdFromFile.setMpaaRating(dvdTokens[2]);
-
-        // Index 3 - Director Name
-        dvdFromFile.setDirectorName(dvdTokens[3]);
-      
-        // Index 4 - Studio
-        dvdFromFile.setStudio(dvdTokens[4]);
         
-        // Index 5 - User Note / Rating
-        dvdFromFile.setUserNote(dvdTokens[5]);
+        
+        // Given the pattern above, the title is in index 1 of the array.
+        dvdFromFile.setTitle(dvdTokens[1]);
+        // Index 2 - Release Date
+        dvdFromFile.setReleaseDate(dvdTokens[2]);
+
+        // Index 3 - MPAA Rating
+        dvdFromFile.setMpaaRating(dvdTokens[3]);
+
+        // Index 4 - Director Name
+        dvdFromFile.setDirectorName(dvdTokens[4]);
+      
+        // Index 5 - Studio
+        dvdFromFile.setStudio(dvdTokens[5]);
+        
+        // Index 6 - User Note / Rating
+        dvdFromFile.setUserNote(dvdTokens[6]);
 
         // We have now created a dvd! Return it!
         return dvdFromFile;
@@ -123,9 +165,10 @@ public class DvdLibraryDaoImpl implements DvdLibraryDao {
             // unmarshall the line into a Dvd
             currentDvd = unmarshallDvd(currentLine);
 
-            // We are going to use the title as the map key for our dvd object.
+            // We are going to use the id as the map key for our dvd object.
             // Put currentDvd into the map using title as the key
-            dvds.put(currentDvd.getTitle(), currentDvd);
+            
+            dvds.put(currentDvd.getId(), currentDvd);
         }
         // close scanner
         scanner.close();
@@ -139,11 +182,11 @@ public class DvdLibraryDaoImpl implements DvdLibraryDao {
         // It's not a complicated process. Just get out each property,
         // and concatenate with our DELIMITER as a kind of spacer. 
 
-        // Start with the title, since that's supposed to be first.
-        String dvdAsText = aDvd.getTitle() + DELIMITER;
+        // Start with the id, since that's supposed to be first.
+        String dvdAsText = aDvd.getId() + DELIMITER;
 
         // add the rest of the properties in the correct order:
-
+        dvdAsText += aDvd.getTitle() + DELIMITER;
         // Release Date
         dvdAsText += aDvd.getReleaseDate() + DELIMITER;
 

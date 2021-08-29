@@ -6,6 +6,9 @@ import com.ajs.dvdlibrary.dto.Dvd;
 
 
 public interface DvdLibraryDao {
+	
+	String generateId()
+	throws DvdLibraryDaoException;
     /**
      * Adds the given DVD to the library and associates it with the given 
      * title. If there is already a DVD associated with the given 
@@ -52,6 +55,12 @@ public interface DvdLibraryDao {
      * was associated with the given title
      * @throws DvdLibraryDaoException
      */
-    Dvd removeDvd(String title)
+    
+    
+   
+public Dvd removeThisDvd(String choice) 
+	throws DvdLibraryDaoException;
+    
+public List<Dvd> removeDvd(String title)
      throws DvdLibraryDaoException;
 }

@@ -1,6 +1,7 @@
 package com.ajs.dvdlibrary.dto;
 
 public class Dvd {
+	private String id;
     private String title;
     private String releaseDate;
     private String mpaaRating;
@@ -8,12 +9,19 @@ public class Dvd {
     private String studio;
     private String userNote;
 
-    public Dvd(String title) {
-        this.title = title;
+    public Dvd(String i) {
+        this.id = i;
+    }
+    
+    public String getId() {
+    	return id;
     }
 
     public String getTitle() {
         return title;
+    }
+    public void setTitle(String title) {
+    	this.title = title;
     }
     public String getReleaseDate() {
         return releaseDate;
@@ -53,4 +61,5 @@ public class Dvd {
     public void setUserNote(String userNote){
     	this.userNote = userNote;
     }
+
 }

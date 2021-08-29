@@ -1,6 +1,7 @@
 package com.ajs.dvdlibrary.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import com.ajs.dvdlibrary.dao.DvdLibraryDao;
 import com.ajs.dvdlibrary.dao.DvdLibraryDaoException;
@@ -47,6 +48,7 @@ public class DvdLibraryController{
                         break;
                     case 5:
                     	viewDvd();
+                    	break;
                     case 6:
                         keepGoing = false;
                         break;
@@ -68,7 +70,7 @@ public class DvdLibraryController{
     private void createDvd() throws DvdLibraryDaoException {
         view.displayCreateDvdBanner();
         Dvd newDvd = view.getNewDvdInfo();
-        dao.addDvd(newDvd.getTitle(), newDvd);
+        dao.addDvd(newDvd.getId(), newDvd);
         view.displayCreateSuccessBanner();
     }
 
@@ -86,20 +88,85 @@ public class DvdLibraryController{
     }
 
     private void removeDvd() throws DvdLibraryDaoException {
+    	
+    	String choice = "";
         view.displayRemoveDvdBanner();
         String dvdTitle = view.getDvdTitleChoice();
-        Dvd removedDvd = dao.removeDvd(dvdTitle);
+        List<Dvd> arr = dao.removeDvd(dvdTitle);
+        if (arr.size()>1) {
+        	
+			for(Dvd currentDvd : arr) {
+				String dvdInfo = String.format("DVD :ID = %s : %s : %s : %s : %s :%s \n",
+						  currentDvd.getId(),
+		                  currentDvd.getTitle(),
+		                  currentDvd.getReleaseDate(),
+		                  currentDvd.getMpaaRating(),
+		                  currentDvd.getDirectorName(),
+		                  currentDvd.getStudio(),
+		                  currentDvd.getUserNote());
+				System.out.print(dvdInfo);
+				
+			}
+			
+			choice = view.displayPickDvdBanner();
+			
+			
+        }
+        else {
+        	
+        	choice = arr.get(0).getId();
+        }
+        
+        Dvd removedDvd = dao.removeThisDvd(choice);
+        
         view.displayRemoveResult(removedDvd);
     }
     
     private void editDvd() throws DvdLibraryDaoException {
+    	
+    	String choice = "";
+    	
     	view.displayEditDvdBanner();
-    	String dvdTitle = view.getDvdTitleChoice();
-    	Dvd removedDvd = dao.removeDvd(dvdTitle);
-    	view.displayRemoveResult(removedDvd);
+        String dvdTitle = view.getDvdTitleChoice();
+        List<Dvd> arr = dao.removeDvd(dvdTitle);
+        if (arr.size()>1) {
+        	
+			for(Dvd currentDvd : arr) {
+				String dvdInfo = String.format("DVD :ID = %s : %s : %s : %s : %s :%s \n",
+						  currentDvd.getId(),
+		                  currentDvd.getTitle(),
+		                  currentDvd.getReleaseDate(),
+		                  currentDvd.getMpaaRating(),
+		                  currentDvd.getDirectorName(),
+		                  currentDvd.getStudio(),
+		                  currentDvd.getUserNote());
+				System.out.print(dvdInfo);
+				
+			}
+			
+			choice = view.displayPickDvdBanner();
+			
+			
+        }
+        else {
+        	
+        	choice = arr.get(0).getId();
+        }
+        
+        Dvd removedDvd = dao.removeThisDvd(choice);
+    	
+    	
+    	
+    	
+    	
+    	
+    	
     	Dvd newDvd = view.getNewDvdInfo();
-    	dao.addDvd(newDvd.getTitle(), newDvd);
+    	dao.addDvd(newDvd.getId(), newDvd);
     	view.displayEditSuccessBanner();
+    	
+    	//removeDvd();
+    	//createDvd();
     }
 
     private void unknownCommand() {
